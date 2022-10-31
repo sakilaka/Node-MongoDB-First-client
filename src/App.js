@@ -1,25 +1,50 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
-function App() {
+const App = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/users')
+      .then(res => res.json())
+      .then(data => setUsers(data))
+  }, [])
+
+  const handleAddUser = (event) => {
+    event.preventDefault();
+    const name = event.target.name.value;
+    const email = event.target.email.value;
+    const user = { name, email };
+    fetch('http://localhost:5000/users', {
+      method: "post",
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(user)
+    })
+      .then(res => res.json())
+      .then(data => {
+        const newUser = [...users, data];
+        setUsers(newUser);
+      })
+      .catch(err => console.log(err))
+    event.target.reset();
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <form onSubmit={handleAddUser}>
+        <input type="text" name="name" id="" placeholder='name' /> <br />
+        <input type="email" name="email" id="" placeholder='email' /> <br />
+        <button>Add User</button>
+      </form>
+      <h2>Users : {users.length}</h2>
+      {
+        users.map(user => <p key={user._id}>{user.name} {user.email} </p>)
+      }
     </div>
   );
-}
+};
 
 export default App;
